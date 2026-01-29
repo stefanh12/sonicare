@@ -154,14 +154,14 @@ class SonicareBLETBSensor(
     async def async_added_to_hass(self) -> None:
         """Handle entity being added to hass."""
         await super().async_added_to_hass()
-        
+
         if not (last_state := await self.async_get_last_state()):
             return
-        
+
         # Validate and convert the restored state based on sensor type
         if last_state.state in (None, "unknown", "unavailable"):
             return
-        
+
         # For numeric sensors, validate the value
         if self.entity_description.device_class in (
             SensorDeviceClass.BATTERY,

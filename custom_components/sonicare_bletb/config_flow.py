@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 import voluptuous as vol
+from bleak_retry_connector import BLEAK_EXCEPTIONS
 from bluetooth_data_tools import human_readable_name
 from homeassistant import config_entries
 from homeassistant.components.bluetooth import (
@@ -14,7 +15,6 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
-from bleak_retry_connector import BLEAK_EXCEPTIONS
 
 from .const import DOMAIN, LOCAL_NAMES
 from .device import SonicareBLETB
