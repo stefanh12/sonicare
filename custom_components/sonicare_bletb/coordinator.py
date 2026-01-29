@@ -4,9 +4,10 @@ import logging
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from sonicare_bletb import SonicareBLETB, SonicareBLETBState
+from sensor_state_data import SensorUpdate
 
 from .const import DOMAIN
+from .device import SonicareBLETB
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class SonicareBLETBCoordinator(DataUpdateCoordinator[None]):
         self.connected = True
 
     @callback
-    def _async_handle_update(self, state: SonicareBLETBState) -> None:
+    def _async_handle_update(self, state: SensorUpdate) -> None:
         """Just trigger the callbacks."""
         _LOGGER.warning("_async_handle_update")
         self.connected = True

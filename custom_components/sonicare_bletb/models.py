@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sonicare_bletb import SonicareBLETB
-
 from .coordinator import SonicareBLETBCoordinator
+from .device import SonicareBLETB
 
 
 @dataclass

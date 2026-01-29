@@ -14,11 +14,13 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
-from sonicare_bletb import BLEAK_EXCEPTIONS, SonicareBLETB
+from bleak_retry_connector import BLEAK_EXCEPTIONS
 
 from .const import DOMAIN, LOCAL_NAMES
+from .device import SonicareBLETB
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.warning("Loading SonicareBLETB config_flow module with DOMAIN=%s", DOMAIN)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -28,8 +30,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         """Initialize the config flow."""
+        _LOGGER.warning("ConfigFlow.__init__ called")
         self._discovery_info: BluetoothServiceInfoBleak | None = None
         self._discovered_devices: dict[str, BluetoothServiceInfoBleak] = {}
+        _LOGGER.warning("ConfigFlow initialized successfully")
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
