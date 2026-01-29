@@ -30,13 +30,13 @@ class SonicareBLETBCoordinator(DataUpdateCoordinator[None]):
     @callback
     def _async_handle_update(self, state: SensorUpdate) -> None:
         """Just trigger the callbacks."""
-        _LOGGER.warning("_async_handle_update")
+        _LOGGER.debug("_async_handle_update")
         self.connected = True
         self.async_set_updated_data(None)
 
     @callback
     def _async_handle_disconnect(self) -> None:
         """Trigger the callbacks for disconnected."""
-        _LOGGER.warning("_async_handle_disconnect")
+        _LOGGER.info("_async_handle_disconnect")
         self.connected = False
         self.async_update_listeners()
