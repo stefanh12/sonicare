@@ -21,24 +21,19 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from bleak import BleakError, BLEDevice
-from bleak_retry_connector import (
-    BleakClientWithServiceCache,
-    establish_connection,
-    retry_bluetooth_connection_error,
-)
+from bleak_retry_connector import (BleakClientWithServiceCache,
+                                   establish_connection,
+                                   retry_bluetooth_connection_error)
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
 from home_assistant_bluetooth import BluetoothServiceInfo
 from sensor_state_data import SensorDeviceClass, SensorUpdate, Units
 from sensor_state_data.enum import StrEnum
 
-from .const import (
-    BRUSHING_UPDATE_INTERVAL_SECONDS,
-    CHARACTERISTIC_BATTERY,
-    CHARACTERISTIC_PRESSURE,
-    NOT_BRUSHING_UPDATE_INTERVAL_SECONDS,
-    TIMEOUT_RECENTLY_BRUSHING,
-)
+from .const import (BRUSHING_UPDATE_INTERVAL_SECONDS, CHARACTERISTIC_BATTERY,
+                    CHARACTERISTIC_PRESSURE,
+                    NOT_BRUSHING_UPDATE_INTERVAL_SECONDS,
+                    TIMEOUT_RECENTLY_BRUSHING)
 
 _LOGGER = logging.getLogger(__name__)
 

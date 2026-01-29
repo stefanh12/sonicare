@@ -2,10 +2,9 @@
 
 import logging
 
-from sonicare_bletb import SonicareBLETB, SonicareBLETBState
-
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from sonicare_bletb import SonicareBLETB, SonicareBLETBState
 
 from .const import DOMAIN
 
