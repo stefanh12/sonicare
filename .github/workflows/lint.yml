@@ -32,7 +32,7 @@ jobs:
         run: black --check custom_components/
 
       - name: Run isort
-        run: isort --check-only custom_components/
+        run: isort --check-only --profile black custom_components/
 
       - name: Run mypy
         run: mypy custom_components/
