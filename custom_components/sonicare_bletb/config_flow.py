@@ -8,8 +8,10 @@ from typing import Any
 import voluptuous as vol
 from bluetooth_data_tools import human_readable_name
 from homeassistant import config_entries
-from homeassistant.components.bluetooth import (BluetoothServiceInfoBleak,
-                                                async_discovered_service_info)
+from homeassistant.components.bluetooth import (
+    BluetoothServiceInfoBleak,
+    async_discovered_service_info,
+)
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResult
 from sonicare_bletb import BLEAK_EXCEPTIONS, SonicareBLETB

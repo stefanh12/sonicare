@@ -15,10 +15,17 @@ https://github.com/Ernst79/bleparser/blob/c42ae922e1abed2720c7fac993777e1bd59c0c
 
 from __future__ import annotations
 
-from sensor_state_data import (BinarySensorDeviceClass, BinarySensorValue,
-                               DeviceKey, SensorDescription, SensorDeviceClass,
-                               SensorDeviceInfo, SensorUpdate, SensorValue,
-                               Units)
+from sensor_state_data import (
+    BinarySensorDeviceClass,
+    BinarySensorValue,
+    DeviceKey,
+    SensorDescription,
+    SensorDeviceClass,
+    SensorDeviceInfo,
+    SensorUpdate,
+    SensorValue,
+    Units,
+)
 
 from .parser import OralBBinarySensor, OralBBluetoothDeviceData, OralBSensor
 
