@@ -1,6 +1,5 @@
 """Sonicare BLE toothbrush integration sensor platform."""
 
-
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -149,7 +148,9 @@ async def async_setup_entry(
     )
 
 
-class SonicareBLETBSensor(CoordinatorEntity[SonicareBLETBCoordinator], SensorEntity, RestoreEntity):
+class SonicareBLETBSensor(
+    CoordinatorEntity[SonicareBLETBCoordinator], SensorEntity, RestoreEntity
+):
     """Generic sensor for SonicareBLETB."""
 
     def __init__(
@@ -173,7 +174,7 @@ class SonicareBLETBSensor(CoordinatorEntity[SonicareBLETBCoordinator], SensorEnt
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
-        if not(last_state := await self.async_get_last_state()):
+        if not (last_state := await self.async_get_last_state()):
             return
         self._attr_native_value = last_state.state
 
