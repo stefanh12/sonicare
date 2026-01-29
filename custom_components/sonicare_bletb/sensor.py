@@ -22,8 +22,6 @@ from .models import SonicareBLETBData
 BRUSHING_TIME_DESCRIPTION = SensorEntityDescription(
     key="brushing_time",
     device_class=SensorDeviceClass.DURATION,
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Brushing time",
     native_unit_of_measurement=UnitOfTime.SECONDS,
@@ -33,8 +31,6 @@ BRUSHING_TIME_DESCRIPTION = SensorEntityDescription(
 BATTERY_LEVEL_DESCRIPTION = SensorEntityDescription(
     key="battery_level",
     device_class=SensorDeviceClass.BATTERY,
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Battery level",
     native_unit_of_measurement=PERCENTAGE,
@@ -44,8 +40,6 @@ BATTERY_LEVEL_DESCRIPTION = SensorEntityDescription(
 ROUTINE_LENGTH_DESCRIPTION = SensorEntityDescription(
     key="routine_length",
     device_class=SensorDeviceClass.DURATION,
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Routine length",
     native_unit_of_measurement=UnitOfTime.SECONDS,
@@ -55,62 +49,43 @@ ROUTINE_LENGTH_DESCRIPTION = SensorEntityDescription(
 HANDLE_STATE_DESCRIPTION = SensorEntityDescription(
     key="handle_state",
     device_class=None,
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Handle state",
-    # native_unit_of_measurement="",
-    # state_class=SensorStateClass.,
 )
 
 AVAILABLE_BRUSHING_ROUTINE_DESCRIPTION = SensorEntityDescription(
     key="available_brushing_routine",
     device_class=None,
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Available brushing routine",
-    # native_unit_of_measurement="Target Energy",
-    # state_class=SensorStateClass.MEASUREMENT,
 )
 
 INTENSITY_DESCRIPTION = SensorEntityDescription(
     key="intensity",
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Intensity",
-    # native_unit_of_measurement="Gates",
 )
 
 LOADED_SESSION_ID_DESCRIPTION = SensorEntityDescription(
     key="loaded_session_id",
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Loaded session id",
 )
 
 HANDLE_TIME_DESCRIPTION = SensorEntityDescription(
     key="handle_time",
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Handle time",
 )
 
 BRUSHING_SESSION_ID_DESCRIPTION = SensorEntityDescription(
     key="brushing_session_id",
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Brushing session id",
 )
 
 LAST_SESSION_ID_DESCRIPTION = SensorEntityDescription(
     key="last_session_id",
-    entity_registry_enabled_default=True,
-    entity_registry_visible_default=True,
     has_entity_name=True,
     name="Last session id",
 )
@@ -187,7 +162,7 @@ class SonicareBLETBSensor(
     @property
     def available(self) -> bool:
         """Unavailable if coordinator isn't connected."""
-        return True
+        return self._coordinator.connected
 
     @property
     def assumed_state(self) -> bool:
