@@ -1,0 +1,28 @@
+{
+  "domain": "sonicare",
+  "name": "Sonicare Toothbrush",
+  "version": "0.1.0",
+  "bluetooth": [
+    {
+      "manufacturer_id": 477
+    },
+    {
+      "service_uuid": "477ea600-a260-11e4-ae37-0002a5d50001"
+    },
+    {
+      "local_name": "Philips Sonicare"
+    }
+  ],
+  "codeowners": ["@stefanh12"],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/stefanh12/sonicare",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "requirements": [
+    "bleak-retry-connector>=3.1.1",
+    "bluetooth-data-tools>=1.11.0",
+    "bluetooth-sensor-state-data>=1.6.2",
+    "sensor-state-data>=2.17.1"
+  ]
+}
