@@ -1,0 +1,1 @@
+{"config":{"abort":{"already_configured":"设备已配置","already_in_progress":"配置流程正在进行中","no_devices_found":"网络上未找到设备","not_supported":"不支持的设备"},"error":{"cannot_connect":"连接失败","unknown":"意外错误"},"flow_title":"{name}","step":{"user":{"data":{"address":"蓝牙地址"}}}}}

@@ -1,0 +1,1 @@
+{"config":{"abort":{"already_configured":"الجهاز مكوّن بالفعل","already_in_progress":"تدفق التكوين قيد التقدم بالفعل","no_devices_found":"لم يتم العثور على أجهزة على الشبكة","not_supported":"الجهاز غير مدعوم"},"error":{"cannot_connect":"فشل الاتصال","unknown":"خطأ غير متوقع"},"flow_title":"{name}","step":{"user":{"data":{"address":"عنوان البلوتوث"}}}}}
