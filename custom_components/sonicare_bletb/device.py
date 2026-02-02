@@ -110,63 +110,78 @@ class SonicareBLETB:
         try:
             services = self._client.services
             for service in services:
-                _LOGGER.warning("Service: %s - %s", service.uuid, service.description)
+                _LOGGER.info("Service: %s - %s", service.uuid, service.description)
                 for char in service.characteristics:
-                    _LOGGER.warning("  Characteristic: %s - Properties: %s",
+                    _LOGGER.info("  Characteristic: %s - Properties: %s",
                                   char.uuid, char.properties)
                     self._characteristics[char.uuid] = service.uuid
 
-                    # Try to read characteristic if readable
-                    if "read" in char.properties:
+                    # Subscribe to notifications for characteristics that support it
+                    if "notify" in char.properties or "indicate" in char.properties:
                         try:
-                            value = await self._client.read_gatt_char(char.uuid)
-                            _LOGGER.warning("    Value: %s (hex: %s)", value, value.hex())
+                            await self._client.start_notify(char.uuid, self._notification_handler)
+                            _LOGGER.warning("    Subscribed to notifications for %s", char.uuid)
                         except Exception as err:
-                            _LOGGER.warning("    Could not read: %s", err)
+                            _LOGGER.debug("    Could not subscribe to %s: %s", char.uuid, err)
         except Exception as err:
             _LOGGER.error("Error discovering characteristics: %s", err, exc_info=True)
 
+    def _notification_handler(self, sender: int, data: bytearray) -> None:
+        """Handle notification data from characteristics."""
+        # sender is the characteristic handle, convert to UUID if possible
+        _LOGGER.warning("Notification from handle %s: %s (hex: %s)",
+                       sender, data, data.hex())
+
+        # Try to find the characteristic UUID from the handle
+        try:
+            char_uuid = None
+            for char in self._client.services.get_characteristic(sender):
+                char_uuid = char.uuid
+                break
+
+            if char_uuid:
+                self._parse_characteristic(char_uuid, bytes(data))
+        except Exception as err:
+            _LOGGER.debug("Could not map handle %s to UUID: %s", sender, err)
+
     async def update_data(self) -> None:
-        """Read data from the device characteristics."""
+        """Update data is handled via notifications, not polling."""
         if not self._is_connected:
             try:
                 await self._connect()
+                await self._discover_characteristics()
             except BleakError:
                 _LOGGER.warning("Could not connect to update data")
                 return
 
-        if not self._client or not self._client.is_connected:
-            return
-
-        _LOGGER.warning("Updating data from device: %s", self._ble_device.address)
-
-        # Read all readable characteristics
-        for char_uuid, service_uuid in self._characteristics.items():
-            try:
-                value = await self._client.read_gatt_char(char_uuid)
-                _LOGGER.warning("Read %s: %s (hex: %s)", char_uuid, value, value.hex())
-                self._parse_characteristic(char_uuid, value)
-            except Exception as err:
-                _LOGGER.debug("Could not read %s: %s", char_uuid, err)
-
-        # Notify callbacks with update
-        update = SensorUpdate(
-            title=f"Sonicare {self._ble_device.address[-5:]}",
-            devices={}
-        )
-        self._notify_callbacks(update)
+        # Data comes via notifications, so just ensure we're connected
+        # Notifications will call _notification_handler which updates sensors
 
     def _parse_characteristic(self, uuid: str, value: bytes) -> None:
         """Parse characteristic value and update sensor attributes."""
-        # This is where we'll parse the characteristic data
-        # For now, just log what we receive
-        _LOGGER.warning("Parsing characteristic %s with value: %s", uuid, value.hex())
+        _LOGGER.warning("Parsing %s with %d bytes: %s", uuid, len(value), value.hex())
 
         # Common GATT characteristics
         if uuid.lower() == "00002a19-0000-1000-8000-00805f9b34fb":  # Battery Level
             if len(value) > 0:
                 self.battery_level = value[0]
                 _LOGGER.warning("Battery level: %d%%", self.battery_level)
+                self._notify_sensor_update()
+
+        # Sonicare-specific characteristics - we'll need to reverse engineer these
+        # For now, just log what we receive to understand the protocol
+        elif uuid.startswith("477ea600-a260-11e4-ae37-0002a5d5"):
+            _LOGGER.warning("Sonicare data from %s: %s", uuid[-4:], value.hex())
+            # Trigger sensor update
+            self._notify_sensor_update()
+
+    def _notify_sensor_update(self) -> None:
+        """Notify callbacks that sensor data has been updated."""
+        update = SensorUpdate(
+            title=f"Sonicare {self._ble_device.address[-5:]}",
+            devices={}
+        )
+        self._notify_callbacks(update)
 
     def set_ble_device_and_advertisement_data(
         self, ble_device: BLEDevice, advertisement_data: Any
