@@ -38,12 +38,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     device = SonicareBLETB(ble_device)
 
+    # Don't fail setup if initial connection fails
+    # Device will connect when advertisements are received
     try:
         await device.initialise()
     except BLEAK_EXCEPTIONS as ex:
-        raise ConfigEntryNotReady(
-            f"Could not connect to Sonicare BLE device with address {address}"
-        ) from ex
+        _LOGGER.warning(
+            "Could not connect to Sonicare during setup, will retry later: %s", ex
+        )
+        # Continue setup anyway - connection will be retried on advertisement
 
     coordinator = SonicareBLETBCoordinator(hass, device)
 

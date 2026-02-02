@@ -9,6 +9,7 @@ from typing import Any
 
 from bleak import BleakClient, BLEDevice
 from bleak.exc import BleakError
+from bleak_retry_connector import establish_connection
 from sensor_state_data import SensorUpdate
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,8 +75,11 @@ class SonicareBLETB:
 
             _LOGGER.warning("Connecting to device: %s", self._ble_device.address)
             try:
-                self._client = BleakClient(self._ble_device)
-                await self._client.connect()
+                self._client = await establish_connection(
+                    BleakClient,
+                    self._ble_device,
+                    self._ble_device.address,
+                )
                 self._is_connected = True
                 _LOGGER.warning("Successfully connected to %s", self._ble_device.address)
             except BleakError as err:

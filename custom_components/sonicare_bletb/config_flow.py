@@ -60,22 +60,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 discovery_info.address, raise_on_progress=False
             )
             self._abort_if_unique_id_configured()
-            sonicare_ble = SonicareBLETB(discovery_info.device)
-            try:
-                await sonicare_ble.initialise()
-            except BLEAK_EXCEPTIONS:
-                errors["base"] = "cannot_connect"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error")
-                errors["base"] = "unknown"
-            else:
-                await sonicare_ble.stop()
-                return self.async_create_entry(
-                    title=local_name,
-                    data={
-                        CONF_ADDRESS: discovery_info.address,
-                    },
-                )
+
+            # Don't connect during config flow, just validate device exists
+            # Connection will happen during integration setup
+            return self.async_create_entry(
+                title=local_name,
+                data={
+                    CONF_ADDRESS: discovery_info.address,
+                },
+            )
 
         if discovery := self._discovery_info:
             self._discovered_devices[discovery.address] = discovery
