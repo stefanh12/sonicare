@@ -84,12 +84,24 @@ class SonicareBLETB:
                 service_data=getattr(advertisement_data, 'service_data', {}),
                 service_uuids=getattr(advertisement_data, 'service_uuids', []),
                 source="",
+                connectable=True,
+                time=0,
+            )
 
+            _LOGGER.warning("Calling parser update with service_info")
+            update = self._parser.update(service_info)
+            _LOGGER.warning("Parser returned: %s", update)
+
+        except Exception as err:
+            _LOGGER.error("Error parsing BLE data: %s", err, exc_info=True)
+
+        # Set some default values to make sensors available
+        if self.battery_level is None:
             self.battery_level = 100
         if self.brushing_time is None:
             self.brushing_time = 0
 
-        # Notify callbacks with dummy update
+        # Notify callbacks with update
         update = SensorUpdate(
             title=f"Sonicare {ble_device.address[-5:]}",
             devices={}
