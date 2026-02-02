@@ -59,7 +59,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             change,
             service_info.name
         )
-        _LOGGER.warning("Calling set_ble_device_and_advertisement_data")
+        _LOGGER.warning("Calling device.update with service_info directly")
+        # Pass the service_info directly to the parser
+        device._parser.update(service_info)
         device.set_ble_device_and_advertisement_data(
             service_info.device, service_info.advertisement
         )

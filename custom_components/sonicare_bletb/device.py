@@ -71,30 +71,8 @@ class SonicareBLETB:
         if hasattr(advertisement_data, 'manufacturer_data'):
             _LOGGER.warning("Manufacturer data: %s", advertisement_data.manufacturer_data)
 
-        # Actually parse the BLE data using the parser
-        try:
-            from home_assistant_bluetooth import BluetoothServiceInfo
-
-            # Create a BluetoothServiceInfo object for the parser
-            service_info = BluetoothServiceInfo(
-                name=ble_device.name or "",
-                address=ble_device.address,
-                rssi=getattr(advertisement_data, 'rssi', -127),
-                manufacturer_data=getattr(advertisement_data, 'manufacturer_data', {}),
-                service_data=getattr(advertisement_data, 'service_data', {}),
-                service_uuids=getattr(advertisement_data, 'service_uuids', []),
-                source="",
-                time=0,
-            )
-
-            _LOGGER.warning("Calling parser update with service_info")
-            update = self._parser.update(service_info)
-            _LOGGER.warning("Parser returned: %s", update)
-
-        except Exception as err:
-            _LOGGER.error("Error parsing BLE data: %s", err, exc_info=True)
-
-        # Set some default values to make sensors available
+        # Parser is called directly from __init__.py with the proper service_info
+        # Just set some default values to make sensors available
         if self.battery_level is None:
             self.battery_level = 100
         if self.brushing_time is None:
