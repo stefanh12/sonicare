@@ -1,0 +1,1 @@
+{"config":{"abort":{"already_configured":"デバイスは既に設定されています","already_in_progress":"設定フローは既に進行中です","no_devices_found":"ネットワーク上にデバイスが見つかりません","not_supported":"サポートされていないデバイス"},"error":{"cannot_connect":"接続に失敗しました","unknown":"予期しないエラー"},"flow_title":"{name}","step":{"user":{"data":{"address":"Bluetoothアドレス"}}}}}

@@ -1,5 +1,7 @@
 """Sonicare BLE toothbrush integration sensor platform."""
 
+import logging
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -18,6 +20,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import SonicareBLETB, SonicareBLETBCoordinator
 from .const import DOMAIN
 from .models import SonicareBLETBData
+
+_LOGGER = logging.getLogger(__name__)
 
 BRUSHING_TIME_DESCRIPTION = SensorEntityDescription(
     key="brushing_time",
@@ -148,10 +152,42 @@ class SonicareBLETBSensor(
         )
 
     async def async_added_to_hass(self) -> None:
+        """Handle entity being added to hass."""
         await super().async_added_to_hass()
+
         if not (last_state := await self.async_get_last_state()):
             return
-        self._attr_native_value = last_state.state
+
+        # Validate and convert the restored state based on sensor type
+        if last_state.state in (None, "unknown", "unavailable"):
+            return
+
+        # For numeric sensors, validate the value
+        if self.entity_description.device_class in (
+            SensorDeviceClass.BATTERY,
+            SensorDeviceClass.DURATION,
+        ):
+            try:
+                # Try to convert to appropriate numeric type
+                if self.entity_description.device_class == SensorDeviceClass.BATTERY:
+                    value = int(last_state.state)
+                    if 0 <= value <= 100:
+                        self._attr_native_value = value
+                else:
+                    # Duration sensors
+                    value = int(last_state.state)
+                    if value >= 0:
+                        self._attr_native_value = value
+            except (ValueError, TypeError):
+                # If conversion fails, don't restore the state
+                _LOGGER.debug(
+                    "Could not restore state %s for %s",
+                    last_state.state,
+                    self.entity_id,
+                )
+        else:
+            # For non-numeric sensors, just restore the string value
+            self._attr_native_value = last_state.state
 
     @callback
     def _handle_coordinator_update(self) -> None:
