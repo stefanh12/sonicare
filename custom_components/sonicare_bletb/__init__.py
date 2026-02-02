@@ -53,25 +53,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         change: bluetooth.BluetoothChange,
     ) -> None:
         """Update from a ble callback."""
-        _LOGGER.warning(
-            "_async_update_ble callback triggered - address: %s, change: %s, name: %s",
+        _LOGGER.debug(
+            "BLE advertisement received - address: %s, change: %s, rssi: %s",
             service_info.address,
             change,
-            service_info.name
+            service_info.rssi
         )
-        _LOGGER.warning("Service info details - rssi: %s, device: %s",
-                       service_info.rssi, service_info.device)
-        _LOGGER.warning("Manufacturer data: %s", service_info.manufacturer_data)
-        _LOGGER.warning("Service data: %s", service_info.service_data)
-        _LOGGER.warning("Service UUIDs: %s", service_info.service_uuids)
-        _LOGGER.warning("Advertisement: %s", service_info.advertisement)
 
-        _LOGGER.warning("Calling device.update with service_info directly")
-        # Pass the service_info directly to the parser
-        device._parser.update(service_info)
+        # Update device reference
         device.set_ble_device_and_advertisement_data(
             service_info.device, service_info.advertisement
         )
+
+        # Trigger a data refresh (will connect and read characteristics)
+        hass.async_create_task(coordinator.async_request_refresh())
 
     entry.async_on_unload(
         bluetooth.async_register_callback(

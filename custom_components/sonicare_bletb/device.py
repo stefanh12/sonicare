@@ -2,29 +2,34 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Callable
 from typing import Any
 
-from bleak import BLEDevice
+from bleak import BleakClient, BLEDevice
+from bleak.exc import BleakError
 from sensor_state_data import SensorUpdate
-
-from .oralb_ble.parser import OralBBluetoothDeviceData
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.warning("Loading device.py module")
 
+# Sonicare service UUID
+SONICARE_SERVICE_UUID = "477ea600-a260-11e4-ae37-0002a5d50001"
+
 
 class SonicareBLETB:
-    """Wrapper for Sonicare BLE toothbrush using OralB parser."""
+    """Wrapper for Sonicare BLE toothbrush with active connection."""
 
     def __init__(self, ble_device: BLEDevice) -> None:
         """Initialize the Sonicare BLE device."""
         _LOGGER.warning("Initializing SonicareBLETB for device: %s", ble_device.address)
         self._ble_device = ble_device
-        self._parser = OralBBluetoothDeviceData()
+        self._client: BleakClient | None = None
         self._callbacks: list[Callable[[SensorUpdate], None]] = []
         self._disconnect_callbacks: list[Callable[[], None]] = []
+        self._connect_lock = asyncio.Lock()
+        self._is_connected = False
 
         # Initialize sensor attributes with None
         self.brushing_time: int | None = None
@@ -37,6 +42,9 @@ class SonicareBLETB:
         self.handle_time: int | None = None
         self.brushing_session_id: str | None = None
         self.last_session_id: str | None = None
+
+        # Discovered characteristics
+        self._characteristics: dict[str, str] = {}
         _LOGGER.warning("Initialized sensor attributes for %s", ble_device.address)
 
     @property
@@ -45,20 +53,98 @@ class SonicareBLETB:
         return self._ble_device.address
 
     async def initialise(self) -> None:
-        """Initialize the device (no-op for passive monitoring)."""
+        """Initialize the device and discover characteristics."""
         _LOGGER.warning("initialise() called for device: %s", self._ble_device.address)
-        # For passive monitoring, no initialization needed
-        # Set initial values
-        self.battery_level = 100
-        self.brushing_time = 0
-        _LOGGER.warning("Set initial values: battery_level=100, brushing_time=0")
-        pass
+        await self._connect()
+        await self._discover_characteristics()
+
+        # Try to read initial data
+        await self.update_data()
 
     async def stop(self) -> None:
-        """Stop the device (no-op for passive monitoring)."""
-        _LOGGER.debug("Stopping Sonicare BLE device: %s", self._ble_device.address)
-        # For passive monitoring, no cleanup needed
-        pass
+        """Stop the device and disconnect."""
+        _LOGGER.warning("Stopping Sonicare BLE device: %s", self._ble_device.address)
+        await self._disconnect()
+
+    async def _connect(self) -> None:
+        """Connect to the BLE device."""
+        async with self._connect_lock:
+            if self._is_connected and self._client and self._client.is_connected:
+                return
+            BLE device reference (for advertisement tracking)."""
+        self._ble_device = ble_device
+        _LOGGER.debug("Updated BLE device reference for %s", ble_device.addressror disconnecting from %s: %s", self._ble_device.address, err)
+                finally:
+                    self._is_connected = False
+                    self._notify_disconnect_callbacks()
+
+    async def _discover_characteristics(self) -> None:
+        """Discover all services and characteristics."""
+        if not self._client or not self._client.is_connected:
+            await self._connect()
+
+        _LOGGER.warning("Discovering services and characteristics for %s", self._ble_device.address)
+
+        try:
+            services = self._client.services
+            for service in services:
+                _LOGGER.warning("Service: %s - %s", service.uuid, service.description)
+                for char in service.characteristics:
+                    _LOGGER.warning("  Characteristic: %s - Properties: %s",
+                                  char.uuid, char.properties)
+                    self._characteristics[char.uuid] = service.uuid
+
+                    # Try to read characteristic if readable
+                    if "read" in char.properties:
+                        try:
+                            value = await self._client.read_gatt_char(char.uuid)
+                            _LOGGER.warning("    Value: %s (hex: %s)", value, value.hex())
+                        except Exception as err:
+                            _LOGGER.warning("    Could not read: %s", err)
+        except Exception as err:
+            _LOGGER.error("Error discovering characteristics: %s", err, exc_info=True)
+
+    async def update_data(self) -> None:
+        """Read data from the device characteristics."""
+        if not self._is_connected:
+            try:
+                await self._connect()
+            except BleakError:
+                _LOGGER.warning("Could not connect to update data")
+                return
+
+        if not self._client or not self._client.is_connected:
+            return
+
+        _LOGGER.warning("Updating data from device: %s", self._ble_device.address)
+
+        # Read all readable characteristics
+        for char_uuid, service_uuid in self._characteristics.items():
+            try:
+                value = await self._client.read_gatt_char(char_uuid)
+                _LOGGER.warning("Read %s: %s (hex: %s)", char_uuid, value, value.hex())
+                self._parse_characteristic(char_uuid, value)
+            except Exception as err:
+                _LOGGER.debug("Could not read %s: %s", char_uuid, err)
+
+        # Notify callbacks with update
+        update = SensorUpdate(
+            title=f"Sonicare {self._ble_device.address[-5:]}",
+            devices={}
+        )
+        self._notify_callbacks(update)
+
+    def _parse_characteristic(self, uuid: str, value: bytes) -> None:
+        """Parse characteristic value and update sensor attributes."""
+        # This is where we'll parse the characteristic data
+        # For now, just log what we receive
+        _LOGGER.warning("Parsing characteristic %s with value: %s", uuid, value.hex())
+
+        # Common GATT characteristics
+        if uuid.lower() == "00002a19-0000-1000-8000-00805f9b34fb":  # Battery Level
+            if len(value) > 0:
+                self.battery_level = value[0]
+                _LOGGER.warning("Battery level: %d%%", self.battery_level)
 
     def set_ble_device_and_advertisement_data(
         self, ble_device: BLEDevice, advertisement_data: Any
