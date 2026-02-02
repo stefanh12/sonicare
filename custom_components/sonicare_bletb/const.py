@@ -1,3 +1,3 @@
 DOMAIN = "sonicare_bletb"
 
-LOCAL_NAMES = {"SONICARE"}
+LOCAL_NAMES = {"Philips Sonicare", "SONICARE"}
