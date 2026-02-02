@@ -25,6 +25,11 @@ class SonicareBLETB:
         self._callbacks: list[Callable[[SensorUpdate], None]] = []
         self._disconnect_callbacks: list[Callable[[], None]] = []
 
+    @property
+    def address(self) -> str:
+        """Return the address of the device."""
+        return self._ble_device.address
+
     async def initialise(self) -> None:
         """Initialize the device (no-op for passive monitoring)."""
         _LOGGER.debug("Initializing Sonicare BLE device: %s", self._ble_device.address)
