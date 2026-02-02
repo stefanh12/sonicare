@@ -71,9 +71,27 @@ class SonicareBLETB:
         async with self._connect_lock:
             if self._is_connected and self._client and self._client.is_connected:
                 return
-            BLE device reference (for advertisement tracking)."""
-        self._ble_device = ble_device
-        _LOGGER.debug("Updated BLE device reference for %s", ble_device.addressror disconnecting from %s: %s", self._ble_device.address, err)
+
+            _LOGGER.warning("Connecting to device: %s", self._ble_device.address)
+            try:
+                self._client = BleakClient(self._ble_device)
+                await self._client.connect()
+                self._is_connected = True
+                _LOGGER.warning("Successfully connected to %s", self._ble_device.address)
+            except BleakError as err:
+                _LOGGER.error("Failed to connect to %s: %s", self._ble_device.address, err)
+                self._is_connected = False
+                raise
+
+    async def _disconnect(self) -> None:
+        """Disconnect from the BLE device."""
+        async with self._connect_lock:
+            if self._client and self._client.is_connected:
+                _LOGGER.warning("Disconnecting from device: %s", self._ble_device.address)
+                try:
+                    await self._client.disconnect()
+                except BleakError as err:
+                    _LOGGER.error("Error disconnecting from %s: %s", self._ble_device.address, err)
                 finally:
                     self._is_connected = False
                     self._notify_disconnect_callbacks()
@@ -149,27 +167,9 @@ class SonicareBLETB:
     def set_ble_device_and_advertisement_data(
         self, ble_device: BLEDevice, advertisement_data: Any
     ) -> None:
-        """Update with new BLE device and advertisement data."""
+        """Update BLE device reference (for advertisement tracking)."""
         self._ble_device = ble_device
-        _LOGGER.warning("Updated BLE device and advertisement data for %s", ble_device.address)
-
-        # Log advertisement data details
-        if hasattr(advertisement_data, 'manufacturer_data'):
-            _LOGGER.warning("Manufacturer data: %s", advertisement_data.manufacturer_data)
-
-        # Parser is called directly from __init__.py with the proper service_info
-        # Just set some default values to make sensors available
-        if self.battery_level is None:
-            self.battery_level = 100
-        if self.brushing_time is None:
-            self.brushing_time = 0
-
-        # Notify callbacks with update
-        update = SensorUpdate(
-            title=f"Sonicare {ble_device.address[-5:]}",
-            devices={}
-        )
-        self._notify_callbacks(update)
+        _LOGGER.debug("Updated BLE device reference for %s", ble_device.address)
 
     def register_callback(
         self, callback: Callable[[SensorUpdate], None]
