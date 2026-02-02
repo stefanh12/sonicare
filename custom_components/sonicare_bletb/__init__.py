@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import logging
 
+from bleak_retry_connector import BLEAK_EXCEPTIONS
+
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth.match import ADDRESS, BluetoothCallbackMatcher
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
-from bleak_retry_connector import BLEAK_EXCEPTIONS
 
 from .const import DOMAIN
 from .coordinator import SonicareBLETBCoordinator
