@@ -9,10 +9,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from sonicare_bletb import BLEAK_EXCEPTIONS, SonicareBLETB
+from bleak_retry_connector import BLEAK_EXCEPTIONS
 
 from .const import DOMAIN
 from .coordinator import SonicareBLETBCoordinator
+from .device import SonicareBLETB
 from .models import SonicareBLETBData
 
 _LOGGER = logging.getLogger(__name__)
