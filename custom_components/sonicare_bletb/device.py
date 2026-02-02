@@ -110,14 +110,14 @@ class SonicareBLETB:
         return remove_callback
 
     def _notify_callbacks(self, update: SensorUpdate) -> None:
+        """Notify all registered callbacks."""
         _LOGGER.warning("_notify_callbacks called with %d callbacks", len(self._callbacks))
         for i, callback in enumerate(self._callbacks):
             _LOGGER.warning("Calling callback %d", i)
             try:
                 callback(update)
             except Exception as err:
-                _LOGGER.error("Error in callback %d: %s", i, err, exc_info=Trulf._callbacks:
-            callback(update)
+                _LOGGER.error("Error in callback %d: %s", i, err, exc_info=True)
 
     def _notify_disconnect_callbacks(self) -> None:
         """Notify all disconnect callbacks."""
