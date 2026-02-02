@@ -128,21 +128,22 @@ class SonicareBLETB:
 
     def _notification_handler(self, sender: int, data: bytearray) -> None:
         """Handle notification data from characteristics."""
-        # sender is the characteristic handle, convert to UUID if possible
-        _LOGGER.warning("Notification from handle %s: %s (hex: %s)",
-                       sender, data, data.hex())
-
-        # Try to find the characteristic UUID from the handle
+        # sender is the characteristic handle, try to get the UUID
+        char_uuid = None
         try:
-            char_uuid = None
-            for char in self._client.services.get_characteristic(sender):
-                char_uuid = char.uuid
-                break
+            if self._client and self._client.services:
+                char = self._client.services.get_characteristic(sender)
+                if char:
+                    char_uuid = char.uuid
+        except Exception:
+            pass
 
-            if char_uuid:
-                self._parse_characteristic(char_uuid, bytes(data))
-        except Exception as err:
-            _LOGGER.debug("Could not map handle %s to UUID: %s", sender, err)
+        uuid_str = char_uuid if char_uuid else f"handle_{sender}"
+        _LOGGER.warning("Notification from %s: %d bytes = %s",
+                       uuid_str, len(data), data.hex())
+
+        if char_uuid:
+            self._parse_characteristic(char_uuid, bytes(data))
 
     async def update_data(self) -> None:
         """Update data is handled via notifications, not polling."""
@@ -159,20 +160,39 @@ class SonicareBLETB:
 
     def _parse_characteristic(self, uuid: str, value: bytes) -> None:
         """Parse characteristic value and update sensor attributes."""
-        _LOGGER.warning("Parsing %s with %d bytes: %s", uuid, len(value), value.hex())
+        uuid_lower = uuid.lower()
 
-        # Common GATT characteristics
-        if uuid.lower() == "00002a19-0000-1000-8000-00805f9b34fb":  # Battery Level
+        # Battery Level (standard GATT)
+        if uuid_lower == "00002a19-0000-1000-8000-00805f9b34fb":
             if len(value) > 0:
                 self.battery_level = value[0]
-                _LOGGER.warning("Battery level: %d%%", self.battery_level)
+                _LOGGER.warning("✓ Battery: %d%%", self.battery_level)
                 self._notify_sensor_update()
 
-        # Sonicare-specific characteristics - we'll need to reverse engineer these
-        # For now, just log what we receive to understand the protocol
+        # Sonicare-specific characteristics
         elif uuid.startswith("477ea600-a260-11e4-ae37-0002a5d5"):
-            _LOGGER.warning("Sonicare data from %s: %s", uuid[-4:], value.hex())
-            # Trigger sensor update
+            suffix = uuid[-4:].lower()
+
+            # Parse based on characteristic suffix
+            if suffix == "4010":  # State/Mode
+                if len(value) > 0:
+                    self.handle_state = str(value[0])
+                    _LOGGER.warning("✓ State: %d", value[0])
+
+            elif suffix == "4082":  # Mode/Intensity?
+                if len(value) > 0:
+                    self.intensity = str(value[0])
+                    _LOGGER.warning("✓ Mode/Intensity: %d", value[0])
+
+            elif suffix == "4090":  # Brushing time (2 bytes)
+                if len(value) >= 2:
+                    # Convert 2 bytes to seconds (little endian)
+                    self.brushing_time = int.from_bytes(value[:2], 'little')
+                    _LOGGER.warning("✓ Brushing time: %d seconds", self.brushing_time)
+
+            else:
+                _LOGGER.info("Sonicare %s: %s", suffix, value.hex())
+
             self._notify_sensor_update()
 
     def _notify_sensor_update(self) -> None:
