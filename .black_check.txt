@@ -1,0 +1,1 @@
+Black formatting check placeholder - manual fixes applied
