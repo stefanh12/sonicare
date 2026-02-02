@@ -59,6 +59,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             change,
             service_info.name
         )
+        _LOGGER.warning("Service info details - rssi: %s, device: %s",
+                       service_info.rssi, service_info.device)
+        _LOGGER.warning("Manufacturer data: %s", service_info.manufacturer_data)
+        _LOGGER.warning("Service data: %s", service_info.service_data)
+        _LOGGER.warning("Service UUIDs: %s", service_info.service_uuids)
+        _LOGGER.warning("Advertisement: %s", service_info.advertisement)
+
         _LOGGER.warning("Calling device.update with service_info directly")
         # Pass the service_info directly to the parser
         device._parser.update(service_info)
