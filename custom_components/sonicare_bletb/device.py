@@ -84,7 +84,6 @@ class SonicareBLETB:
                 service_data=getattr(advertisement_data, 'service_data', {}),
                 service_uuids=getattr(advertisement_data, 'service_uuids', []),
                 source="",
-                connectable=True,
                 time=0,
             )
 
