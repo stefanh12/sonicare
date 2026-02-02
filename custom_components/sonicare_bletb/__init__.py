@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 
 from bleak_retry_connector import BLEAK_EXCEPTIONS
-
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth.match import ADDRESS, BluetoothCallbackMatcher
 from homeassistant.config_entries import ConfigEntry
