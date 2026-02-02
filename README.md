@@ -2,6 +2,27 @@
 
 This integration allows you to connect and monitor your Sonicare BLE toothbrushes in Home Assistant.
 
+## Prerequisites
+
+Before installing this integration, you need:
+
+- **Bluetooth Adapter**: Home Assistant needs access to a Bluetooth adapter
+- **Bluetooth Proxy** (recommended): An [ESPHome Bluetooth Proxy](https://esphome.io/components/bluetooth_proxy.html) device for better range and reliability
+  - Alternative: Home Assistant server with built-in Bluetooth adapter
+- **Supported Toothbrush**: Modern Philips Sonicare toothbrush with Bluetooth connectivity (2017+)
+  - Look for models that advertise "Bluetooth" or work with the Philips Sonicare app
+
+### Setting up a Bluetooth Proxy
+
+If your Home Assistant server is far from your bathroom, a Bluetooth proxy will provide better connectivity:
+
+1. Get an ESP32 device (ESP32-C3, ESP32-S3, or regular ESP32)
+2. Flash it with ESPHome Bluetooth Proxy firmware
+3. Add it to Home Assistant
+4. The toothbrush will automatically connect through the proxy
+
+For detailed instructions, see: [ESPHome Bluetooth Proxy Documentation](https://esphome.io/components/bluetooth_proxy.html)
+
 ## Installation
 
 ### HACS (Recommended)
