@@ -112,17 +112,26 @@ class SonicareBLETB:
             for service in services:
                 _LOGGER.info("Service: %s - %s", service.uuid, service.description)
                 for char in service.characteristics:
-                    _LOGGER.info("  Characteristic: %s - Properties: %s",
-                                  char.uuid, char.properties)
+                    _LOGGER.info(
+                        "  Characteristic: %s - Properties: %s",
+                        char.uuid,
+                        char.properties,
+                    )
                     self._characteristics[char.uuid] = service.uuid
 
                     # Subscribe to notifications for characteristics that support it
                     if "notify" in char.properties or "indicate" in char.properties:
                         try:
-                            await self._client.start_notify(char.uuid, self._notification_handler)
-                            _LOGGER.warning("    Subscribed to notifications for %s", char.uuid)
+                            await self._client.start_notify(
+                                char.uuid, self._notification_handler
+                            )
+                            _LOGGER.warning(
+                                "    Subscribed to notifications for %s", char.uuid
+                            )
                         except Exception as err:
-                            _LOGGER.debug("    Could not subscribe to %s: %s", char.uuid, err)
+                            _LOGGER.debug(
+                                "    Could not subscribe to %s: %s", char.uuid, err
+                            )
         except Exception as err:
             _LOGGER.error("Error discovering characteristics: %s", err, exc_info=True)
 
@@ -155,12 +164,19 @@ class SonicareBLETB:
                 char_uuid = sender_str[:36]
 
         if char_uuid:
-            _LOGGER.debug("Notification from %s: %d bytes = %s",
-                         char_uuid[-4:], len(data), data.hex())
+            _LOGGER.debug(
+                "Notification from %s: %d bytes = %s",
+                char_uuid[-4:],
+                len(data),
+                data.hex(),
+            )
             self._parse_characteristic(char_uuid, bytes(data))
         else:
-            _LOGGER.warning("Notification from unknown sender %s: %s",
-                          type(sender).__name__, data.hex())
+            _LOGGER.warning(
+                "Notification from unknown sender %s: %s",
+                type(sender).__name__,
+                data.hex(),
+            )
 
     async def update_data(self) -> None:
         """Update data is handled via notifications, not polling."""

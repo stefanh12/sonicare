@@ -60,7 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "BLE advertisement received - address: %s, change: %s, rssi: %s",
             service_info.address,
             change,
-            service_info.rssi
+            service_info.rssi,
         )
 
         # Update device reference
@@ -95,7 +95,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        entry, PLATFORMS
+    ):
         data: SonicareBLETBData = hass.data[DOMAIN].pop(entry.entry_id)
         await data.device.stop()
 

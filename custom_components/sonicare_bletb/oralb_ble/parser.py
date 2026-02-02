@@ -263,16 +263,24 @@ class OralBBluetoothDeviceData(BluetoothData):
             manufacturer_id = SONICARE_MANUFACTURER
             _LOGGER.warning("Found Sonicare manufacturer ID")
         else:
-            _LOGGER.warning("Neither OralB (%s) nor Sonicare (%s) manufacturer ID found in data, keys: %s",
-                          ORALB_MANUFACTURER, SONICARE_MANUFACTURER, list(manufacturer_data.keys()))
+            _LOGGER.warning(
+                "Neither OralB (%s) nor Sonicare (%s) manufacturer ID found in data, keys: %s",
+                ORALB_MANUFACTURER,
+                SONICARE_MANUFACTURER,
+                list(manufacturer_data.keys()),
+            )
             return None
 
         data = manufacturer_data[manufacturer_id]
         self.set_device_manufacturer("Oral-B")
-        _LOGGER.warning("Parsing Oral-B/Sonicare sensor data: %s (length: %d)", data.hex(), len(data))
+        _LOGGER.warning(
+            "Parsing Oral-B/Sonicare sensor data: %s (length: %d)", data.hex(), len(data)
+        )
         msg_length = len(data)
         if msg_length not in (9, 11):
-            _LOGGER.warning("Unexpected message length: %d (expected 9 or 11)", msg_length)
+            _LOGGER.warning(
+                "Unexpected message length: %d (expected 9 or 11)", msg_length
+            )
             return
 
         device_bytes = data[0:2]
@@ -395,7 +403,7 @@ class OralBBluetoothDeviceData(BluetoothData):
         try:
             await self._get_payload(client)
         except BleakError as err:
-            _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
+            _LOGGER.warning("Reading gatt characters failed with err: %s", err)
         finally:
             await client.disconnect()
             _LOGGER.debug("Disconnected from active bluetooth client")
