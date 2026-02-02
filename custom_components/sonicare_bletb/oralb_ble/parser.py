@@ -240,23 +240,28 @@ class OralBBluetoothDeviceData(BluetoothData):
 
     def __init__(self) -> None:
         super().__init__()
+        _LOGGER.warning("OralBBluetoothDeviceData initialized")
         # If this is True, we are currently brushing or were brushing as of the last advertisement data
         self._brushing = False
         self._last_brush = 0.0
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.debug("Parsing OralB BLE advertisement data: %s", service_info)
+        _LOGGER.warning("Parsing BLE advertisement data for %s", service_info.address)
+        _LOGGER.warning("Service info name: %s", service_info.name)
         manufacturer_data = service_info.manufacturer_data
+        _LOGGER.warning("Manufacturer data keys: %s", list(manufacturer_data.keys()))
         address = service_info.address
         if ORALB_MANUFACTURER not in manufacturer_data:
+            _LOGGER.warning("OralB manufacturer ID %s not found in data, keys: %s", ORALB_MANUFACTURER, list(manufacturer_data.keys()))
             return None
 
         data = manufacturer_data[ORALB_MANUFACTURER]
         self.set_device_manufacturer("Oral-B")
-        _LOGGER.debug("Parsing Oral-B sensor: %s", data)
+        _LOGGER.warning("Parsing Oral-B/Sonicare sensor data: %s (length: %d)", data.hex(), len(data))
         msg_length = len(data)
         if msg_length not in (9, 11):
+            _LOGGER.warning("Unexpected message length: %d (expected 9 or 11)", msg_length)
             return
 
         device_bytes = data[0:2]
@@ -270,14 +275,24 @@ class OralBBluetoothDeviceData(BluetoothData):
         if msg_length >= 11:
             sector_timer = data[9]
             no_of_sectors = data[10]
+        _LOGGER.warning(
+            "Parsed values - device_bytes: %s, state: %d, pressure: %d, time: %d, mode: %d, sector: %d",
+            device_bytes.hex(), state, pressure, brush_time, mode, sector
+        )
 
         model = BYTES_TO_MODEL.get(device_bytes, Models.SmartSeries7000)
         model_info = DEVICE_TYPES[model]
+        _LOGGER.warning(
+            "Detected model: %s, device type: %s",
+            model.name if hasattr(model, 'name') else str(model),
+            model_info.device_type
+        )
         self.brush_modes = model_info.modes
         self.set_device_type(model_info.device_type)
         name = f"{model_info.device_type} {short_address(address)}"
         self.set_device_name(name)
         self.set_title(name)
+        _LOGGER.warning("Device name set to: %s", name)
         tb_state = STATES.get(state, f"unknown state {state}")
         tb_mode = self.brush_modes.get(mode, f"unknown mode {mode}")
         tb_pressure = PRESSURE.get(pressure, f"unknown pressure {pressure}")
