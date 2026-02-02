@@ -126,24 +126,28 @@ class SonicareBLETB:
         except Exception as err:
             _LOGGER.error("Error discovering characteristics: %s", err, exc_info=True)
 
-    def _notification_handler(self, sender: int, data: bytearray) -> None:
+    def _notification_handler(self, sender: int | str, data: bytearray) -> None:
         """Handle notification data from characteristics."""
-        # sender is the characteristic handle, try to get the UUID
-        char_uuid = None
-        try:
-            if self._client and self._client.services:
-                char = self._client.services.get_characteristic(sender)
-                if char:
-                    char_uuid = char.uuid
-        except Exception:
-            pass
-
-        uuid_str = char_uuid if char_uuid else f"handle_{sender}"
-        _LOGGER.warning("Notification from %s: %d bytes = %s",
-                       uuid_str, len(data), data.hex())
+        # In Bleak, sender can be either handle (int) or UUID (str) depending on backend
+        if isinstance(sender, str):
+            char_uuid = sender
+        else:
+            # It's a handle, try to get the UUID
+            char_uuid = None
+            try:
+                if self._client and self._client.services:
+                    char = self._client.services.get_characteristic(sender)
+                    if char:
+                        char_uuid = char.uuid
+            except Exception:
+                pass
 
         if char_uuid:
+            _LOGGER.debug("Notification from %s: %d bytes = %s",
+                         char_uuid[-4:], len(data), data.hex())
             self._parse_characteristic(char_uuid, bytes(data))
+        else:
+            _LOGGER.warning("Notification from unknown handle %s: %s", sender, data.hex())
 
     async def update_data(self) -> None:
         """Update data is handled via notifications, not polling."""
