@@ -197,7 +197,8 @@ PRESSURE = {
 
 ACTIVE_CONNECTION_PRESSURE = {0: "low", 1: "normal", 2: "high"}
 
-ORALB_MANUFACTURER = 0x00DC
+ORALB_MANUFACTURER = 0x00DC  # 220 - OralB
+SONICARE_MANUFACTURER = 0x01DD  # 477 - Philips Sonicare
 
 BYTES_TO_MODEL = {
     b"\x086": Models.IOSeries67,
@@ -252,11 +253,21 @@ class OralBBluetoothDeviceData(BluetoothData):
         manufacturer_data = service_info.manufacturer_data
         _LOGGER.warning("Manufacturer data keys: %s", list(manufacturer_data.keys()))
         address = service_info.address
-        if ORALB_MANUFACTURER not in manufacturer_data:
-            _LOGGER.warning("OralB manufacturer ID %s not found in data, keys: %s", ORALB_MANUFACTURER, list(manufacturer_data.keys()))
+
+        # Check for both OralB and Sonicare manufacturer IDs
+        manufacturer_id = None
+        if ORALB_MANUFACTURER in manufacturer_data:
+            manufacturer_id = ORALB_MANUFACTURER
+            _LOGGER.warning("Found OralB manufacturer ID")
+        elif SONICARE_MANUFACTURER in manufacturer_data:
+            manufacturer_id = SONICARE_MANUFACTURER
+            _LOGGER.warning("Found Sonicare manufacturer ID")
+        else:
+            _LOGGER.warning("Neither OralB (%s) nor Sonicare (%s) manufacturer ID found in data, keys: %s",
+                          ORALB_MANUFACTURER, SONICARE_MANUFACTURER, list(manufacturer_data.keys()))
             return None
 
-        data = manufacturer_data[ORALB_MANUFACTURER]
+        data = manufacturer_data[manufacturer_id]
         self.set_device_manufacturer("Oral-B")
         _LOGGER.warning("Parsing Oral-B/Sonicare sensor data: %s (length: %d)", data.hex(), len(data))
         msg_length = len(data)
