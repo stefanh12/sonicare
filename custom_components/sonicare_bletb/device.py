@@ -20,6 +20,7 @@ class SonicareBLETB:
 
     def __init__(self, ble_device: BLEDevice) -> None:
         """Initialize the Sonicare BLE device."""
+        _LOGGER.warning("Initializing SonicareBLETB for device: %s", ble_device.address)
         self._ble_device = ble_device
         self._parser = OralBBluetoothDeviceData()
         self._callbacks: list[Callable[[SensorUpdate], None]] = []
@@ -36,6 +37,7 @@ class SonicareBLETB:
         self.handle_time: int | None = None
         self.brushing_session_id: str | None = None
         self.last_session_id: str | None = None
+        _LOGGER.warning("Initialized sensor attributes for %s", ble_device.address)
 
     @property
     def address(self) -> str:
@@ -44,8 +46,12 @@ class SonicareBLETB:
 
     async def initialise(self) -> None:
         """Initialize the device (no-op for passive monitoring)."""
-        _LOGGER.debug("Initializing Sonicare BLE device: %s", self._ble_device.address)
+        _LOGGER.warning("initialise() called for device: %s", self._ble_device.address)
         # For passive monitoring, no initialization needed
+        # Set initial values
+        self.battery_level = 100
+        self.brushing_time = 0
+        _LOGGER.warning("Set initial values: battery_level=100, brushing_time=0")
         pass
 
     async def stop(self) -> None:
@@ -82,6 +88,7 @@ class SonicareBLETB:
         self, callback: Callable[[SensorUpdate], None]
     ) -> Callable[[], None]:
         """Register a callback to be called when data is updated."""
+        _LOGGER.warning("Registering callback, total callbacks: %d", len(self._callbacks) + 1)
         self._callbacks.append(callback)
 
         def remove_callback() -> None:
@@ -103,8 +110,13 @@ class SonicareBLETB:
         return remove_callback
 
     def _notify_callbacks(self, update: SensorUpdate) -> None:
-        """Notify all registered callbacks."""
-        for callback in self._callbacks:
+        _LOGGER.warning("_notify_callbacks called with %d callbacks", len(self._callbacks))
+        for i, callback in enumerate(self._callbacks):
+            _LOGGER.warning("Calling callback %d", i)
+            try:
+                callback(update)
+            except Exception as err:
+                _LOGGER.error("Error in callback %d: %s", i, err, exc_info=Trulf._callbacks:
             callback(update)
 
     def _notify_disconnect_callbacks(self) -> None:
