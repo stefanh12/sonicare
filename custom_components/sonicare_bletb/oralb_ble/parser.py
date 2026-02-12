@@ -274,7 +274,9 @@ class OralBBluetoothDeviceData(BluetoothData):
         data = manufacturer_data[manufacturer_id]
         self.set_device_manufacturer("Oral-B")
         _LOGGER.warning(
-            "Parsing Oral-B/Sonicare sensor data: %s (length: %d)", data.hex(), len(data)
+            "Parsing Oral-B/Sonicare sensor data: %s (length: %d)",
+            data.hex(),
+            len(data),
         )
         msg_length = len(data)
         if msg_length not in (9, 11):
@@ -296,15 +298,20 @@ class OralBBluetoothDeviceData(BluetoothData):
             no_of_sectors = data[10]
         _LOGGER.warning(
             "Parsed values - device_bytes: %s, state: %d, pressure: %d, time: %d, mode: %d, sector: %d",
-            device_bytes.hex(), state, pressure, brush_time, mode, sector
+            device_bytes.hex(),
+            state,
+            pressure,
+            brush_time,
+            mode,
+            sector,
         )
 
         model = BYTES_TO_MODEL.get(device_bytes, Models.SmartSeries7000)
         model_info = DEVICE_TYPES[model]
         _LOGGER.warning(
             "Detected model: %s, device type: %s",
-            model.name if hasattr(model, 'name') else str(model),
-            model_info.device_type
+            model.name if hasattr(model, "name") else str(model),
+            model_info.device_type,
         )
         self.brush_modes = model_info.modes
         self.set_device_type(model_info.device_type)

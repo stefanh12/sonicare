@@ -81,9 +81,13 @@ class SonicareBLETB:
                     self._ble_device.address,
                 )
                 self._is_connected = True
-                _LOGGER.warning("Successfully connected to %s", self._ble_device.address)
+                _LOGGER.warning(
+                    "Successfully connected to %s", self._ble_device.address
+                )
             except BleakError as err:
-                _LOGGER.error("Failed to connect to %s: %s", self._ble_device.address, err)
+                _LOGGER.error(
+                    "Failed to connect to %s: %s", self._ble_device.address, err
+                )
                 self._is_connected = False
                 raise
 
@@ -91,11 +95,15 @@ class SonicareBLETB:
         """Disconnect from the BLE device."""
         async with self._connect_lock:
             if self._client and self._client.is_connected:
-                _LOGGER.warning("Disconnecting from device: %s", self._ble_device.address)
+                _LOGGER.warning(
+                    "Disconnecting from device: %s", self._ble_device.address
+                )
                 try:
                     await self._client.disconnect()
                 except BleakError as err:
-                    _LOGGER.error("Error disconnecting from %s: %s", self._ble_device.address, err)
+                    _LOGGER.error(
+                        "Error disconnecting from %s: %s", self._ble_device.address, err
+                    )
                 finally:
                     self._is_connected = False
                     self._notify_disconnect_callbacks()
@@ -105,7 +113,9 @@ class SonicareBLETB:
         if not self._client or not self._client.is_connected:
             await self._connect()
 
-        _LOGGER.warning("Discovering services and characteristics for %s", self._ble_device.address)
+        _LOGGER.warning(
+            "Discovering services and characteristics for %s", self._ble_device.address
+        )
 
         try:
             services = self._client.services
@@ -144,7 +154,7 @@ class SonicareBLETB:
         if isinstance(sender, str):
             # Already a UUID string
             char_uuid = sender
-        elif hasattr(sender, 'uuid'):
+        elif hasattr(sender, "uuid"):
             # It's a characteristic object with uuid attribute
             char_uuid = sender.uuid
         elif isinstance(sender, int):
@@ -220,26 +230,31 @@ class SonicareBLETB:
             elif suffix == "4090":  # Brushing time (2 bytes)
                 if len(value) >= 2:
                     # Convert 2 bytes to seconds (little endian)
-                    self.brushing_time = int.from_bytes(value[:2], 'little')
+                    self.brushing_time = int.from_bytes(value[:2], "little")
                     _LOGGER.warning("✓ Brushing time: %d seconds", self.brushing_time)
 
             elif suffix == "4091":  # Routine length
                 if len(value) >= 2:
-                    self.routine_length = int.from_bytes(value[:2], 'little')
+                    self.routine_length = int.from_bytes(value[:2], "little")
                     _LOGGER.warning("✓ Routine length: %d seconds", self.routine_length)
 
             elif suffix == "4092":  # Handle time
                 if len(value) >= 4:
-                    self.handle_time = int.from_bytes(value[:4], 'little')
+                    self.handle_time = int.from_bytes(value[:4], "little")
                     _LOGGER.warning("✓ Handle time: %d", self.handle_time)
 
             elif suffix == "4093":  # Brushing routine
                 if len(value) > 0:
                     try:
-                        self.available_brushing_routine = value.decode('utf-8').strip('\x00')
+                        self.available_brushing_routine = value.decode("utf-8").strip(
+                            "\x00"
+                        )
                     except UnicodeDecodeError:
                         self.available_brushing_routine = str(value[0])
-                    _LOGGER.warning("✓ Available brushing routine: %s", self.available_brushing_routine)
+                    _LOGGER.warning(
+                        "✓ Available brushing routine: %s",
+                        self.available_brushing_routine,
+                    )
 
             elif suffix == "4094":  # Loaded session ID
                 if len(value) >= 2:
@@ -249,7 +264,9 @@ class SonicareBLETB:
             elif suffix == "4095":  # Brushing session ID
                 if len(value) >= 2:
                     self.brushing_session_id = value.hex()
-                    _LOGGER.warning("✓ Brushing session ID: %s", self.brushing_session_id)
+                    _LOGGER.warning(
+                        "✓ Brushing session ID: %s", self.brushing_session_id
+                    )
 
             elif suffix == "4096":  # Last session ID
                 if len(value) >= 2:
@@ -264,8 +281,7 @@ class SonicareBLETB:
     def _notify_sensor_update(self) -> None:
         """Notify callbacks that sensor data has been updated."""
         update = SensorUpdate(
-            title=f"Sonicare {self._ble_device.address[-5:]}",
-            devices={}
+            title=f"Sonicare {self._ble_device.address[-5:]}", devices={}
         )
         self._notify_callbacks(update)
 
@@ -280,7 +296,9 @@ class SonicareBLETB:
         self, callback: Callable[[SensorUpdate], None]
     ) -> Callable[[], None]:
         """Register a callback to be called when data is updated."""
-        _LOGGER.warning("Registering callback, total callbacks: %d", len(self._callbacks) + 1)
+        _LOGGER.warning(
+            "Registering callback, total callbacks: %d", len(self._callbacks) + 1
+        )
         self._callbacks.append(callback)
 
         def remove_callback() -> None:
@@ -303,7 +321,9 @@ class SonicareBLETB:
 
     def _notify_callbacks(self, update: SensorUpdate) -> None:
         """Notify all registered callbacks."""
-        _LOGGER.warning("_notify_callbacks called with %d callbacks", len(self._callbacks))
+        _LOGGER.warning(
+            "_notify_callbacks called with %d callbacks", len(self._callbacks)
+        )
         for i, callback in enumerate(self._callbacks):
             _LOGGER.warning("Calling callback %d", i)
             try:
