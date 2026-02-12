@@ -38,6 +38,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     device = SonicareBLETB(ble_device)
 
+    # Create coordinator first so callbacks are registered before initializing
+    coordinator = SonicareBLETBCoordinator(hass, device)
+
     # Don't fail setup if initial connection fails
     # Device will connect when advertisements are received
     try:
@@ -47,8 +50,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "Could not connect to Sonicare during setup, will retry later: %s", ex
         )
         # Continue setup anyway - connection will be retried on advertisement
-
-    coordinator = SonicareBLETBCoordinator(hass, device)
 
     @callback
     def _async_update_ble(
