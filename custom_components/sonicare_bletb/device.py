@@ -223,6 +223,39 @@ class SonicareBLETB:
                     self.brushing_time = int.from_bytes(value[:2], 'little')
                     _LOGGER.warning("✓ Brushing time: %d seconds", self.brushing_time)
 
+            elif suffix == "4091":  # Routine length
+                if len(value) >= 2:
+                    self.routine_length = int.from_bytes(value[:2], 'little')
+                    _LOGGER.warning("✓ Routine length: %d seconds", self.routine_length)
+
+            elif suffix == "4092":  # Handle time
+                if len(value) >= 4:
+                    self.handle_time = int.from_bytes(value[:4], 'little')
+                    _LOGGER.warning("✓ Handle time: %d", self.handle_time)
+
+            elif suffix == "4093":  # Brushing routine
+                if len(value) > 0:
+                    try:
+                        self.available_brushing_routine = value.decode('utf-8').strip('\x00')
+                    except UnicodeDecodeError:
+                        self.available_brushing_routine = str(value[0])
+                    _LOGGER.warning("✓ Available brushing routine: %s", self.available_brushing_routine)
+
+            elif suffix == "4094":  # Loaded session ID
+                if len(value) >= 2:
+                    self.loaded_session_id = value.hex()
+                    _LOGGER.warning("✓ Loaded session ID: %s", self.loaded_session_id)
+
+            elif suffix == "4095":  # Brushing session ID
+                if len(value) >= 2:
+                    self.brushing_session_id = value.hex()
+                    _LOGGER.warning("✓ Brushing session ID: %s", self.brushing_session_id)
+
+            elif suffix == "4096":  # Last session ID
+                if len(value) >= 2:
+                    self.last_session_id = value.hex()
+                    _LOGGER.warning("✓ Last session ID: %s", self.last_session_id)
+
             else:
                 _LOGGER.info("Sonicare %s: %s", suffix, value.hex())
 
