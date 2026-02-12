@@ -1,7 +1,7 @@
 {
   "domain": "sonicare_bletb",
   "name": "Sonicare Toothbrush",
-  "version": "0.1.0",
+  "version": "0.3.22",
   "bluetooth": [
     {
       "manufacturer_id": 477
