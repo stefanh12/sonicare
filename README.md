@@ -2,6 +2,8 @@
 
 This integration allows you to connect and monitor your Sonicare BLE toothbrushes in Home Assistant.
 
+This is a beta integration and is being tested currently. There are issues that need to be sorted before the integration is live.
+
 ## Prerequisites
 
 Before installing this integration, you need:
